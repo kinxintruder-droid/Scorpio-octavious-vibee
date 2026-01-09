@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scorpio Octavious Vibe | Pro</title>
+    <style>
+        :root {
+            --black: #000000;
+            --deep-blue: #0a192f;
+            --vibrant-blue: #007bff;
+            --text: #e6f1ff;
+            --card-bg: #112240;
+            --accent: #64ffda;
+            --admin-email: "kinxintruder@gmail.com";
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--black);
+            color: var(--text);
+            transition: background-color 0.5s;
+        }
+
+        body.logged-in { background-color: var(--deep-blue); }
+
+        /* Navigation */
+        header {
+            display: none;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.9);
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 2px solid var(--vibrant-blue);
+        }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; background: #020c1b;
+            display: none; justify-content: space-around; padding: 10px 0;
+            border-top: 2px solid var(--vibrant-blue);
+            z-index: 1000;
+        }
+
+        .container { max-width: 500px; margin: auto; padding: 20px; padding-bottom: 100px; }
+        .view { display: none; }
+        .active { display: block; }
+
+        /* UI Elements */
+        .card { background: var(--card-bg); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #233554; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid var(--vibrant-blue); background: #020c1b; color: #fff; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 5px; }
+        .btn-primary { background: var(--vibrant-blue); color: white; }
+        .btn-boost { background: #ff9800; color: #000; font-size: 0.8rem; }
+        .btn-outline { background: transparent; border: 1px solid var(--vibrant-blue); color: var(--vibrant-blue); }
+        
+        .reel-video { width: 100%; border-radius: 10px; background: #000; max-height: 400px; }
+        .profile-pic { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
+        .status-dot { width: 10px; height: 10px; background: #4caf50; border-radius: 50%; display: inline-block; }
+        
+        #chat-window { height: 300px; overflow-y: auto; background: #000; padding: 10px; border-radius: 10px; }
+        .msg { margin: 5px 0; padding: 8px; border-radius: 8px; max-width: 80%; font-size: 0.9rem; }
+        .msg-user { background: var(--vibrant-blue); margin-left: auto; }
+        .msg-ai { background: var(--card-bg); color: var(--accent); }
+    </style>
+</head>
+<body id="mainBody">
+
+<header id="appHeader">
+    <div style="font-weight: bold; color: var(--vibrant-blue);">🦂 SCORPIO</div>
+    <div id="notif-area" onclick="show('notifs')" style="cursor:pointer;">🔔<span id="notif-count" style="color:red; font-size:0.7rem;">0</span></div>
+</header>
+
+<div class="container">
+    
+    <div id="view-auth" class="view active">
+        <div style="text-align: center; margin-top: 50px;">
+            <h1 style="color: var(--vibrant-blue);">Scorpio Vibe</h1>
+            <div class="card">
+                <h3 id="authTitle">Sign In</h3>
+                <input type="email" id="authEmail" placeholder="Email Address">
+                <input type="password" id="authPass" placeholder="Password">
+                <button class="btn btn-primary" onclick="handleAuth()">Continue</button>
+                <p onclick="toggleAuthMode()" id="toggleText" style="font-size: 0.8rem; cursor:pointer; margin-top:15px;">New here? Create Account</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-home" class="view">
+        <input type="text" id="searchFriends" placeholder="🔍 Search artists or friends..." onkeyup="searchArtists()">
+        <div id="combinedFeed"></div>
+    </div>
+
+    <div id="view-upload" class="view">
+        <div class="card">
+            <h2>Post Your Vibe</h2>
+            <select id="postType">
+                <option value="reel">Video Reel</option>
+                <option value="photo">Single Photo</option>
+            </select>
+            <input type="text" id="postTitle" placeholder="Title/Caption">
+            <input type="text" id="postUrl" placeholder="Image or MP4 Link">
+            <button class="btn btn-primary" onclick="createNewPost()">Post Now</button>
+        </div>
+    </div>
+
+    <div id="view-msgs" class="view">
+        <div style="display:flex; justify-content: space-between; align-items: center;">
+            <h2>Messages</h2>
+            <span id="activeStatus"><span class="status-dot"></span> Active</span>
+        </div>
+        <div class="card">
+            <div id="chat-window"></div>
+            <div style="display:flex; gap:5px; margin-top:10px;">
+                <input type="text" id="msgInput" placeholder="Write message...">
+                <button class="btn btn-primary" style="width:auto; margin:0;" onclick="sendMsg()">Send</button>
+            </div>
+            <button class="btn btn-outline" style="margin-top:10px;" onclick="alert('Calling...')">📞 Video Call</button>
+        </div>
+    </div>
+
+    <div id="view-ai" class="view">
+        <h2 style="color: var(--accent);">Octavious AI</h2>
+        <div class="card">
+            <div id="ai-window" style="height:250px; overflow-y:auto; background:#000; padding:10px; margin-bottom:10px;"></div>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="aiInput" placeholder="Ask Octavious anything...">
+                <button class="btn btn-primary" style="width:auto; margin:0;" onclick="askAI()">Ask</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-wallet" class="view">
+        <div class="card" style="background: linear-gradient(45deg, #007bff, #000); text-align:center;">
+            <p>Total Balance</p>
+            <h1 id="wallBal">$0.00</h1>
+            <small>Official Wallet: wallet.scorpio-octavious-vibe.com</small>
+        </div>
+        <div class="card">
+            <h3>Withdraw</h3>
+            <input type="number" id="drawAmount" placeholder="Amount to withdraw">
+            <select id="drawMethod">
+                <option>PayPal</option>
+                <option>Bitcoin (BTC)</option>
+            </select>
+            <input type="text" id="payoutAddr" placeholder="Email or BTC Address">
+            <p style="font-size:0.7rem; color: #888;">Note: Payments processed within 45 minutes.</p>
+            <button class="btn btn-primary" onclick="withdraw()">Withdraw Funds</button>
+        </div>
+        <div class="card" id="adsBalanceCard">
+            <h3>Ads Credits</h3>
+            <p>Ads Balance: <span id="adsBal">$0.00</span></p>
+            <small>Credits used for boosting views. Non-withdrawable.</small>
+        </div>
+    </div>
+
+    <div id="view-profile" class="view">
+        <div class="card" style="text-align:center;">
+            <img id="pfp" src="https://via.placeholder.com/80" class="profile-pic">
+            <h2 id="dispNick">User</h2>
+            <div style="display:flex; justify-content: space-around; margin:15px 0;">
+                <div><b id="count-followers">0</b><br>Followers</div>
+                <div><b id="count-friends">0</b><br>Friends</div>
+            </div>
+            <input type="text" id="nickInput" placeholder="New Nickname">
+            <button class="btn btn-outline" onclick="updateNickname()">Update Name</button>
+            <hr style="border:0.5px solid #233554; margin:20px 0;">
+            <h3>Vibe Marketing Shop</h3>
+            <div style="display:flex; justify-content: space-between; margin-bottom:10px;">
+                <span>Gold Badge 🛡️</span>
+                <button onclick="buyShop('Gold Badge', 4.99)" class="btn-primary" style="width:80px; padding:5px;">$4.99</button>
+            </div>
+            <div style="display:flex; justify-content: space-between;">
+                <span>Pro Filter ✨</span>
+                <button onclick="buyShop('Pro Filter', 2.45)" class="btn-primary" style="width:80px; padding:5px;">$2.45</button>
+            </div>
+            <button class="btn" style="background:#440000; margin-top:30px;" onclick="logout()">Sign Out</button>
+        </div>
+    </div>
+
+    <div id="view-notifs" class="view">
+        <h2>Activity</h2>
+        <div id="notif-list"></div>
+    </div>
+
+</div>
+
+<nav class="bottom-nav" id="botNav">
+    <button onclick="show('home')">🏠<br>Home</button>
+    <button onclick="show('upload')">➕<br>Post</button>
+    <button onclick="show('msgs')">💬<br>Chat</button>
+    <button onclick="show('ai')">🤖<br>AI</button>
+    <button onclick="show('wallet')">💰<br>Wallet</button>
+    <button onclick="show('profile')">👤<br>Me</button>
+</nav>
+
+<script>
+    // --- DATABASE & STATE ---
+    let users = JSON.parse(localStorage.getItem('sc_users')) || {};
+    let currentUser = localStorage.getItem('sc_session');
+    let isSignup = false;
+    let lastNickChange = localStorage.getItem('sc_last_nick') || 0;
+
+    function save() {
+        localStorage.setItem('sc_users', JSON.stringify(users));
+    }
+
+    // --- AUTHENTICATION ---
+    function toggleAuthMode() {
+        isSignup = !isSignup;
+        document.getElementById('authTitle').innerText = isSignup ? "Create Account" : "Sign In";
+        document.getElementById('toggleText').innerText = isSignup ? "Login instead" : "New here? Create Account";
+    }
+
+    function handleAuth() {
+        const email = document.getElementById('authEmail').value;
+        const pass = document.getElementById('authPass').value;
+        if(!email || !pass) return alert("Enter details");
+
+        if(isSignup) {
+            if(users[email]) return alert("User exists");
+            users[email] = {
+                email, pass, nickname: "Viber_" + Math.floor(Math.random()*999),
+                pfp: "https://via.placeholder.com/80", balance: 0, adsBalance: 0,
+                posts: [], friends: [], followers: [], notifs: []
+            };
+            alert("Account created!");
+        }
+
+        if(users[email] && users[email].pass === pass) {
+            currentUser = email;
+            localStorage.setItem('sc_session', email);
+            location.reload();
+        } else {
+            alert("Wrong credentials");
+        }
+        save();
+    }
+
+    function logout() {
+        localStorage.removeItem('sc_session');
+        location.reload();
+    }
+
+    // --- NAVIGATION ---
+    function show(id) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + id).classList.add('active');
+        if(id === 'home') renderFeed();
+    }
+
+    // --- CORE LOGIC ---
+    function renderFeed() {
+        const feed = document.getElementById('combinedFeed');
+        feed.innerHTML = "";
+        
+        Object.keys(users).forEach(uEmail => {
+            users[uEmail].posts.forEach((post, idx) => {
+                const isMine = uEmail === currentUser;
+                const card = document.createElement('div');
+                card.className = "card";
+                card.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                        <img src="${users[uEmail].pfp}" style="width:30px; height:30px; border-radius:50%">
+                        <b>${users[uEmail].nickname}</b>
+                        ${!isMine ? `<button onclick="addFriend('${uEmail}')" style="font-size:0.6rem; padding:2px 5px;">+ Friend</button>` : ''}
+                    </div>
+                    <h4>${post.title}</h4>
+                    ${post.type === 'reel' ? `<video src="${post.url}" class="reel-video" controls autoplay muted loop></video>` : `<img src="${post.url}" style="width:100%; border-radius:10px;">`}
+                    
+                    <div style="display:flex; justify-content:space-between; margin-top:10px; align-items:center;">
+                        <span style="font-size:0.8rem;">👁 ${post.views} | ❤️ ${post.likes.length}</span>
+                        <div style="display:flex; gap:10px;">
+                             <button onclick="likePost('${uEmail}', ${idx})" ${isMine ? 'disabled' : ''} style="background:none; border:none; color:var(--accent); cursor:pointer;">❤️ Like</button>
+                             <button onclick="sharePost('${uEmail}', ${idx})" style="background:none; border:none; color:var(--vibrant-blue); cursor:pointer;">🔗 Share</button>
+                        </div>
+                    </div>
+                    <div style="margin-top:10px; border-top:1px solid #233554; padding-top:10px;">
+                        <button class="btn btn-boost" onclick="openBoost('${uEmail}', ${idx})">🚀 Boost Views</button>
+                    </div>
+                `;
+                feed.appendChild(card);
+            });
+        });
+    }
+
+    function createNewPost() {
+        const type = document.getElementById('postType').value;
+        const title = document.getElementById('postTitle').value;
+        const url = document.getElementById('postUrl').value;
+        
+        if(!title || !url) return alert("Missing info");
+
+        users[currentUser].posts.unshift({
+            type, title, url, views: 0, likes: [], comments: []
+        });
+        save();
+        show('home');
+    }
+
+    function likePost(owner, idx) {
+        const post = users[owner].posts[idx];
+        if(post.likes.includes(currentUser)) return alert("Already liked");
+        
+        post.likes.push(currentUser);
+        
+        // Earning Logic
+        if(post.type === 'photo' && post.likes.length % 20 === 0) {
+            users[owner].balance += 7;
+        }
+        
+        // General Earnings
+        if(post.likes.length % 100 === 0) users[owner].balance += 3;
+
+        addNotif(owner, `${users[currentUser].nickname} liked your post!`);
+        save();
+        renderFeed();
+    }
+
+    function openBoost(owner, idx) {
+        const amt = prompt("Enter Boost Amount:\n$2 = 5k views\n$10 = 10k views\n$100 = 100k views");
+        if(!amt) return;
+        
+        alert(`Redirecting to payment... Funds sent to kinxintruder@gmail.com`);
+        const vMap = {"2": 5689, "7": 6000, "10": 10000, "15": 24000, "26": 60000, "45": 58000, "100": 100000};
+        
+        if(vMap[amt]) {
+            users[owner].posts[idx].views += vMap[amt];
+            users[owner].adsBalance += parseFloat(amt);
+            save();
+            renderFeed();
+            alert("Views Delivered!");
+        }
+    }
+
+    function updateNickname() {
+        const now = Date.now();
+        if(now - lastNickChange < 36000000) return alert("Wait 10 hours to change again");
+        
+        const n = document.getElementById('nickInput').value;
+        if(n) {
+            users[currentUser].nickname = n;
+            lastNickChange = now;
+            localStorage.setItem('sc_last_nick', now);
+            save();
+            refreshProfile();
+        }
+    }
+
+    function refreshProfile() {
+        const u = users[currentUser];
+        document.getElementById('dispNick').innerText = u.nickname;
+        document.getElementById('count-followers').innerText = u.followers.length;
+        document.getElementById('count-friends').innerText = u.friends.length;
+        document.getElementById('wallBal').innerText = `$${u.balance.toFixed(2)}`;
+        document.getElementById('adsBal').innerText = `$${u.adsBalance.toFixed(2)}`;
+    }
+
+    function addNotif(target, text) {
+        users[target].notifs.push({text, time: new Date().toLocaleTimeString()});
+    }
+
+    function askAI() {
+        const inp = document.getElementById('aiInput');
+        const win = document.getElementById('ai-window');
+        if(!inp.value) return;
+
+        win.innerHTML += `<div class="msg msg-user">${inp.value}</div>`;
+        setTimeout(() => {
+            win.innerHTML += `<div class="msg msg-ai"><b>Octavious:</b> Your vibe is unmatched! Keep pushing and earning. 🦂</div>`;
+            win.scrollTop = win.scrollHeight;
+        }, 500);
+        inp.value = "";
+    }
+
+    function withdraw() {
+        const amt = document.getElementById('drawAmount').value;
+        if(amt > users[currentUser].balance) return alert("Insufficient balance");
+        alert(`Withdrawal of $${amt} requested. Check your external device/wallet in 45 mins.`);
+        users[currentUser].balance -= amt;
+        save();
+        refreshProfile();
+    }
+
+    // --- INIT ---
+    if(currentUser && users[currentUser]) {
+        document.getElementById('mainBody').classList.add('logged-in');
+        document.getElementById('appHeader').style.display = 'flex';
+        document.getElementById('botNav').style.display = 'flex';
+        document.getElementById('view-auth').classList.remove('active');
+        show('home');
+        refreshProfile();
+    }
+</script>
+</body>
+</html>
